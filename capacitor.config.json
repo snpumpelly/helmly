@@ -1,0 +1,12 @@
+{
+  "appId": "com.helmly.app",
+  "appName": "Helmly",
+  "webDir": ".",
+  "server": {
+    "url": "https://helmly.pages.dev",
+    "cleartext": true
+  },
+  "ios": {
+    "contentInset": "automatic"
+  }
+}

@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+.wrangler/
+ios/App/Pods/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+web-build/
+dist/
+~$*
+*.docx
