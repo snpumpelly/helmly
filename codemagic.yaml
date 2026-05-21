@@ -11,7 +11,7 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        APP_STORE_APPLE_ID: 1  # Set this to your App Store Connect App ID after creating the app
+        APP_STORE_APPLE_ID: 6771184542
       xcode: latest
       cocoapods: default
     scripts:
