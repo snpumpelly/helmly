@@ -16,7 +16,14 @@ workflows:
       - name: Install dependencies
         script: npm install
       - name: Add iOS platform
-        script: npx cap add ios
+        script: |
+          echo "Node: $(node --version), NPM: $(npm --version)"
+          echo "Capacitor config:"
+          cat capacitor.config.json
+          npx cap add ios --verbose 2>&1 || true
+          echo "--- ios dir after cap add ---"
+          ls -la ios/ 2>/dev/null || echo "No ios/ directory created"
+          ls -la ios/App/ 2>/dev/null || echo "No ios/App/ directory"
       - name: Capacitor sync
         script: npx cap sync ios
       - name: Install CocoaPods
