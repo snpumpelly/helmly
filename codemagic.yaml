@@ -62,18 +62,7 @@ workflows:
           test $ARCHIVE_EXIT -eq 0
 
           echo "=== Exporting IPA ==="
-          python3 -c "
-import plistlib
-data = {
-    'method': 'app-store-connect',
-    'teamID': '66468M6T5D',
-    'signingStyle': 'manual',
-    'provisioningProfiles': {'com.helmly.app': 'Helmly App Store'}
-}
-with open('/tmp/ExportOptions.plist', 'wb') as f:
-    plistlib.dump(data, f)
-print('ExportOptions.plist written')
-"
+          python3 -c "import plistlib; d={'method':'app-store-connect','teamID':'66468M6T5D','signingStyle':'manual','provisioningProfiles':{'com.helmly.app':'Helmly App Store'}}; plistlib.dump(d, open('/tmp/ExportOptions.plist','wb')); print('plist written')"
 
           xcodebuild -exportArchive \
             -archivePath $ARCHIVE_PATH \
