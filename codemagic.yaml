@@ -30,17 +30,33 @@ workflows:
           keychain add-certificates --certificate /tmp/cert.p12 --certificate-password helmly2026
       - name: Set up provisioning profile
         script: |
-          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/Helmly_App_Store.mobileprovision
-          xcode-project use-profiles --profile /tmp/Helmly_App_Store.mobileprovision
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/Helmly_App_Store.mobileprovision
+          echo "Profile UUID:"
+          /usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin <<< $(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/Helmly_App_Store.mobileprovision)
       - name: Build IPA
         script: |
-          xcode-project build-ipa \
-            --project ios/App/App.xcodeproj \
-            --scheme "$XCODE_SCHEME" \
-            --archive-flags="-clonedSourcePackagesDirPath $CM_BUILD_DIR/ios/App/SourcePackages -skipPackagePluginValidation"
+          PROFILE_UUID=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/Helmly_App_Store.mobileprovision | /usr/libexec/PlistBuddy -c "Print UUID" /dev/stdin)
+          echo "Using profile UUID: $PROFILE_UUID"
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath $CM_BUILD_DIR/build/ios/App.xcarchive \
+            -clonedSourcePackagesDirPath $CM_BUILD_DIR/ios/App/SourcePackages \
+            -skipPackagePluginValidation \
+            DEVELOPMENT_TEAM=66468M6T5D \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="Helmly App Store" \
+            PROVISIONING_PROFILE=$PROFILE_UUID \
+            archive 2>&1 | tee /tmp/xcode_build.log | tail -50
+          echo "Exit: $?"
     artifacts:
       - build/ios/ipa/*.ipa
+      - build/ios/*.xcarchive
       - /tmp/xcodebuild_logs/*.log
+      - /tmp/xcode_build.log
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
