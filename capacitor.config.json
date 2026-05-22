@@ -1,7 +1,7 @@
 {
   "appId": "com.helmly.app",
   "appName": "Helmly",
-  "webDir": ".",
+  "webDir": "www",
   "server": {
     "url": "https://helmly.pages.dev",
     "cleartext": true
