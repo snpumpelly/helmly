@@ -10,7 +10,7 @@ workflows:
         XCODE_SCHEME: "App"
         APP_STORE_APPLE_ID: "6771184542"
         BUNDLE_ID: "com.helmly.app"
-      xcode: latest
+      xcode: 16.3
     scripts:
       - name: Install dependencies
         script: npm install
@@ -30,13 +30,14 @@ workflows:
           keychain add-certificates --certificate /tmp/cert.p12 --certificate-password helmly2026
       - name: Set up provisioning profile
         script: |
-          echo "$PROVISIONING_PROFILE" | base64 --decode > /tmp/Helmly_App_Store.mobileprovision
+          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > /tmp/Helmly_App_Store.mobileprovision
           xcode-project use-profiles --profile /tmp/Helmly_App_Store.mobileprovision
       - name: Build IPA
         script: |
           xcode-project build-ipa \
             --project ios/App/App.xcodeproj \
-            --scheme "$XCODE_SCHEME"
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags="-clonedSourcePackagesDirPath $CM_BUILD_DIR/ios/App/SourcePackages -skipPackagePluginValidation"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
