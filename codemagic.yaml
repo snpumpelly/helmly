@@ -26,8 +26,15 @@ workflows:
       - name: Set up keychain and import certificate
         script: |
           keychain initialize
-          echo $CERTIFICATE_PUBLIC_DATA | base64 --decode > /tmp/cert.cer
+          # Strip certutil headers if present and decode
+          echo "$CERTIFICATE_PUBLIC_DATA" | grep -v "CERTIFICATE" | grep -v "^$" | tr -d '\r\n' | base64 --decode > /tmp/cert.cer || \
+          echo "$CERTIFICATE_PUBLIC_DATA" | base64 --decode > /tmp/cert.cer
           echo "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert.key
+          openssl pkcs12 -export \
+            -out /tmp/cert.p12 \
+            -inkey /tmp/cert.key \
+            -in /tmp/cert.cer \
+            -passout pass:helmly2026 -legacy || \
           openssl pkcs12 -export \
             -out /tmp/cert.p12 \
             -inkey /tmp/cert.key \
@@ -36,7 +43,9 @@ workflows:
           keychain add-certificates --certificate /tmp/cert.p12 --certificate-password helmly2026
       - name: Set up provisioning profile
         script: |
-          echo $PROVISIONING_PROFILE | base64 --decode > /tmp/Helmly_App_Store.mobileprovision
+          # Strip certutil headers if present and decode
+          echo "$PROVISIONING_PROFILE" | grep -v "CERTIFICATE" | grep -v "^$" | tr -d '\r\n' | base64 --decode > /tmp/Helmly_App_Store.mobileprovision || \
+          echo "$PROVISIONING_PROFILE" | base64 --decode > /tmp/Helmly_App_Store.mobileprovision
           xcode-project use-profiles --profile /tmp/Helmly_App_Store.mobileprovision
       - name: Build IPA
         script: |
