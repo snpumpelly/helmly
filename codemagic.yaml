@@ -5,20 +5,15 @@ workflows:
     environment:
       groups:
         - app-store
-      ios_signing:
-        provisioning_profiles:
-          - $PROVISIONING_PROFILE
-        certificates:
-          - certificate: $CERTIFICATE_PUBLIC_DATA
-            private_key: $CERTIFICATE_PRIVATE_KEY
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        APP_STORE_APPLE_ID: 6771184542
+        APP_STORE_APPLE_ID: "6771184542"
+        BUNDLE_ID: "com.helmly.app"
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Install Capacitor CLI
+      - name: Install dependencies
         script: npm install
       - name: Capacitor sync
         script: npx cap sync ios
@@ -26,13 +21,28 @@ workflows:
         script: |
           cd ios/App
           pod install
-      - name: Set app version
+      - name: Set up keychain and import certificate
         script: |
-          BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID") + 1))
-          cd ios/App
-          agvtool new-version -all $BUILD_NUMBER
+          keychain initialize
+          echo $CERTIFICATE_PUBLIC_DATA | base64 --decode > /tmp/cert.cer
+          echo "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert.key
+          openssl pkcs12 -export \
+            -out /tmp/cert.p12 \
+            -inkey /tmp/cert.key \
+            -in /tmp/cert.cer \
+            -passout pass:helmly2026
+          keychain add-certificates --certificate /tmp/cert.p12 --certificate-password helmly2026
+      - name: Set up provisioning profile
+        script: |
+          echo $PROVISIONING_PROFILE | base64 --decode > /tmp/Helmly_App_Store.mobileprovision
+          xcode-project use-profiles --profile /tmp/Helmly_App_Store.mobileprovision
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --workspace ios/App/App.xcworkspace \
+            --scheme "$XCODE_SCHEME"
     artifacts:
-      - ios/App/build/ios/ipa/*.ipa
+      - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:
