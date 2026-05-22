@@ -6,12 +6,11 @@ workflows:
       groups:
         - app-store
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.helmly.app
-        certificate_private_key: $CERTIFICATE_PRIVATE_KEY
-        certificate_public_data: $CERTIFICATE_PUBLIC_DATA
         provisioning_profiles:
           - $PROVISIONING_PROFILE
+        certificates:
+          - certificate: $CERTIFICATE_PUBLIC_DATA
+            private_key: $CERTIFICATE_PRIVATE_KEY
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
