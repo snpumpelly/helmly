@@ -10,7 +10,7 @@ workflows:
         XCODE_SCHEME: "App"
         APP_STORE_APPLE_ID: "6771184542"
         BUNDLE_ID: "com.helmly.app"
-      xcode: 16.3
+      xcode: 26.0
     scripts:
       - name: Install dependencies
         script: npm install
