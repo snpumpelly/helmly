@@ -21,7 +21,9 @@ workflows:
         script: npx cap sync ios
       - name: Install CocoaPods
         script: |
-          cd ios/App
+          echo "Build dir: $CM_BUILD_DIR"
+          find $CM_BUILD_DIR -name "Podfile" -not -path "*/node_modules/*" 2>/dev/null
+          cd $CM_BUILD_DIR/ios/App
           pod install
       - name: Set up keychain and import certificate
         script: |
